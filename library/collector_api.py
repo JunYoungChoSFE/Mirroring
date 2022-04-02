@@ -2,8 +2,6 @@ from collections import OrderedDict
 
 from sqlalchemy import Integer, Text, String
 
-# 이것은 git이 잘 작동하는지 확인하기 위한 주석이다. jjunbot_220402
-
 ver = "#version 1.5.0"
 print(f"collector_api Version: {ver}")
 

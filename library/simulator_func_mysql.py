@@ -113,7 +113,7 @@ class simulator_func_mysql:
         ###!@####################################################################################################################
         # 아래 부터는 알고리즘 별로 별도의 설정을 해주는 부분
 
-        if self.simul_num in (1, 4):
+        if self.simul_num in (1, 4, 5):
 
             # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
             self.simul_start_date = "19850101"
@@ -149,22 +149,21 @@ class simulator_func_mysql:
             self.invest_min_limit_rate = 0.98
 
             if self.simul_num == 4:
-                self.simul_start_date = "20200504"
+                self.db_to_realtime_daily_buy_list_num = 4
+                self.interval_month = 3
 
-                # 아래 3개는 분별시뮬레이션 옵션
-                # (use_min, only_nine_buy 변수만 각각의 알고리즘에 붙여 넣기 해서 사용)
+            elif self.simul_num == 5:
+                self.db_to_realtime_daily_buy_list_num = 5
+                self.total_transaction_price = 500000000
+                self.interval_month = 3
+                self.vol_mul = 3
+                self.d1_diff = 2
                 # 분별 시뮬레이션을 사용하고 싶을 경우 아래 옵션을 True로 변경하여 사용
                 self.use_min = True
-                # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
+                # # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
                 self.only_nine_buy = True
-                # self.buy_stop옵션은 수정 필요가 없음. self.only_nine_buy 옵션을 True로 하게 되면 시뮬레이터가 9시에 매수 후에 self.buy_stop을 true로 변경해서 당일에는 더이상 매수하지 않도록 설정함
+                # # self.buy_stop옵션은 수정 필요가 없음. self.only_nine_buy 옵션을 True로 하게 되면 시뮬레이터가 9시에 매수 후에 self.buy_stop을 true로 변경해서 당일에는 더이상 매수하지 않도록 설정함
                 self.buy_stop = False
-
-                # 익절 수익률 기준치
-                self.sell_point = 3
-
-                # 손절 수익률 기준치
-                self.losscut_point = -2
 
         elif self.simul_num == 2:
             # 시뮬레이팅 시작 일자
@@ -229,6 +228,10 @@ class simulator_func_mysql:
 
             # 손절 수익률 기준치
             self.losscut_point = -2
+            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_limit_rate = 1.01
+            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_min_limit_rate = 0.98
 
             # 아래 3개는 분별시뮬레이션 옵션
             # (use_min, only_nine_buy 변수만 각각의 알고리즘에 붙여 넣기 해서 사용)
@@ -614,6 +617,37 @@ class simulator_func_mysql:
                                                             "and close < '%s' group by code"
             # 아래 명령을 통해 테이블로 부터 데이터를 가져오면 리스트 형태로 realtime_daily_buy_list 에 담긴다.
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
+
+        elif self.db_to_realtime_daily_buy_list_num == 4:
+            sql = "select * from `" + date_rows_yesterday + "` a " \
+            "where yes_clo20 > yes_clo5 and clo5 > clo20 " \
+            "and NOT exists (select null from stock_konex b where a.code=b.code)" \
+            "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
+            "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
+            "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)"\
+            "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)"\
+            "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)"\
+            "and a.close < '%s'"
+
+            realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (date_rows_yesterday, self.interval_month, date_rows_yesterday,date_rows_yesterday ,date_rows_yesterday,date_rows_yesterday,date_rows_yesterday, self.invest_unit)).fetchall()
+
+        elif self.db_to_realtime_daily_buy_list_num == 5:
+            sql = "select * from `" + date_rows_yesterday + "` a " \
+            "where yes_clo20 > yes_clo5 and clo5 > clo20 " \
+            "and vol20 * clo20 > '%s' " \
+            "and vol20 * '%s' < volume " \
+            "and d1_diff_rate > '%s' " \
+            "and NOT exists (select null from stock_konex b where a.code=b.code)" \
+            "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
+            "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
+            "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)"\
+            "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)"\
+            "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)"\
+            "and a.close < '%s' " \
+            "order by vol20 * clo20 desc"
+
+            realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.total_transaction_price, self.vol_mul, self.d1_diff, date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
+
 
         ######################################################################################################################################################################################
         else:

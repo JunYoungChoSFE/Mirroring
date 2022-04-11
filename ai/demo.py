@@ -20,7 +20,7 @@ conn = pymysql.connect(host=cf.db_ip,
 
 FEATURE_COLUMNS = ["close", "volume", "open", "high", "low"]
 code_name = '삼성전자'
-until = '20200712'
+until = '20220408'
 sql = """
     SELECT {} FROM `{}`
     WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
@@ -59,7 +59,7 @@ OPTIMIZER = "adam"
 BATCH_SIZE = 64
 
 # 학습 횟수
-EPOCHS = 10
+EPOCHS = 200
 
 try:
     # shuffle: split을 해주기 이전에 시퀀스를 섞을건지 여부

@@ -31,13 +31,13 @@ conn = pymysql.connect(host=cf.db_ip,
                        port=int(cf.db_port),
                        user=cf.db_id,
                        password=cf.db_passwd,
-                       db='daily_craw',
+                       db='min_craw',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
 FEATURE_COLUMNS = ["date","close", "volume", "open", "high", "low"]
 code_name = '삼성전자'
-until = '20200712'
+until = '20220408'
 sql = """
     SELECT {} FROM `{}`
     WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
@@ -129,7 +129,7 @@ model.compile(loss='mae', optimizer='adam')
 #             ex) 1000개 데이터를 batch_size =10로 설정하면, 100개의 step을 통해 1epoch를 도는 것
 #                 즉, 1epoch(학습1번) = 10(batch_size) * 100(step)
 #               batch_size가 커지면 한번에 많은 양을 학습하기 때문에 train 과정이 빨라진다. 그러나 컴퓨터 메모리 문제로 나눠서 학습하는 것
-h=model.fit(X_train, y_train, batch_size=32, epochs = 10, validation_data= (X_test, y_test), verbose=1)
+h=model.fit(X_train, y_train, batch_size=1024, epochs = 200, validation_data= (X_test, y_test), verbose=1)
 
 # 위에서 만든 모델로 예측 (3차원 데이터를 넣어줘야함)
 pred_y = model.predict(X_test)

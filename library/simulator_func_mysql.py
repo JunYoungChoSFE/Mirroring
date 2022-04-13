@@ -181,8 +181,8 @@ class simulator_func_mysql:
                 # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
                 self.diff_point = 1 # 단위 %
                 # 분별 시뮬레이션 옵션
-                # self.use_min = True
-                # self.only_nine_buy = True
+                self.use_min = True
+                self.only_nine_buy = True
 
                 if self.simul_num == 8:
                     # 매수 리스트 설정 알고리즘 번호 (절대모멘텀 query ver)
@@ -252,7 +252,8 @@ class simulator_func_mysql:
 
             # 매도 리스트 설정 알고리즘 번호
 
-            self.sell_list_num = 1
+            self.sell_list_num = 20
+            self.cut_time = 1200
 
             ###################################
 
@@ -268,10 +269,10 @@ class simulator_func_mysql:
             self.limit_money = 1000000
 
             # 익절 수익률 기준치
-            self.sell_point = 3
+            self.sell_point = 20
 
             # 손절 수익률 기준치
-            self.losscut_point = -2
+            self.losscut_point = -10
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_limit_rate = 1.01
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
@@ -282,7 +283,7 @@ class simulator_func_mysql:
             # 분별 시뮬레이션을 사용하고 싶을 경우 아래 옵션을 True로 변경하여 사용
             self.use_min = True
             # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
-            self.only_nine_buy = False
+            self.only_nine_buy = True
             # self.buy_stop옵션은 수정 필요가 없음. self.only_nine_buy 옵션을 True로 하게 되면 시뮬레이터가 9시에 매수 후에 self.buy_stop을 true로 변경해서 당일에는 더이상 매수하지 않도록 설정함
             self.buy_stop = False
 
@@ -299,13 +300,13 @@ class simulator_func_mysql:
 
             # 매수 리스트 설정 알고리즘 번호
             self.db_to_realtime_daily_buy_list_num = 5
-            self.total_transaction_price = 500000000
+            self.total_transaction_price = 3000000000
             self.interval_month = 3
             self.vol_mul = 2
             self.d1_diff = 3
 
             # 매도 리스트 설정 알고리즘 번호
-            self.sell_list_num = 1
+            self.sell_list_num = 20
 
             ###################################
 
@@ -321,14 +322,15 @@ class simulator_func_mysql:
             self.limit_money = 1000000
 
             # 익절 수익률 기준치
-            self.sell_point = 3.5
+            self.sell_point = 15
 
             # 손절 수익률 기준치
-            self.losscut_point = -3
+            self.losscut_point = -10
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_limit_rate = 1.01
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_min_limit_rate = 0.98
+            self.cut_time = 1200
 
             # AI알고리즘 사용 여부 (고급 챕터에서 소개)
             self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
@@ -351,7 +353,7 @@ class simulator_func_mysql:
 
             elif self.simul_num == 23:
                 # 시뮬레이팅 시작 일자
-                self.simul_start_date = "20210504"
+                self.simul_start_date = "20200604"
                 # AI알고리즘 사용 여부 (고급 챕터에서 소개)
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 3  # ai 알고리즘 선택
@@ -1002,7 +1004,7 @@ class simulator_func_mysql:
                                               'volume', 'clo5', 'clo10', 'clo20', 'clo40', 'clo60', 'clo80',
                                               'clo100', 'clo120', "clo5_diff_rate", "clo10_diff_rate",
                                               "clo20_diff_rate", "clo40_diff_rate", "clo60_diff_rate",
-                                              "clo80_diff_rate", "clo100_diff_rate", "clo120_diff_rate"])
+                                              "clo80_diff_rate", "clo100_diff_rate", "clo120_diff_rate", "current_time"])
 
     # 가장 초기에 매수 했을 때 all_item_db 에 추가하는 함수
     def db_to_all_item(self, min_date, df, index, code, code_name, purchase_price, yesterday_close):
@@ -1323,7 +1325,7 @@ class simulator_func_mysql:
             # select 할 컬럼은 항상 코드명, 수익률, 매도할 종목의 현재가, 수익(손실)금액
             # sql 첫 번째 라인은 항상 고정
             sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
-                  "and (rate>='%s' or rate <= '%s') group by code"
+                  "and (rate >= '%s' or rate <= '%s') group by code"
             sell_list = self.engine_simulator.execute(sql % (0, self.sell_point, self.losscut_point)).fetchall()
 
         # 5 / 20 이동 평균선 데드크로스 이거나, losscut_point(손절 기준 수익률) 이하로 떨어지면 손절하는 알고리즘
@@ -1383,12 +1385,25 @@ class simulator_func_mysql:
                     "OR ALLDB.rate <= '%s')"
             sell_list = self.engine_simulator.execute(sql % (self.diff_point * (-1), self.losscut_point)).fetchall()
 
+        elif self.sell_list_num == 20:
+            # select 할 컬럼은 항상 코드명, 수익률, 매도할 종목의 현재가, 수익(손실)금액
+            # sql 첫 번째 라인은 항상 고정
+            sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
+                  "and (`current_time` > '%s') group by code"
+            sell_list = self.engine_simulator.execute(sql % (0, self.cut_time)).fetchall()
+
         ##################################################################################################################################################################################################################
         else:
             print(f"{self.simul_num}번 알고리즘에 대한 self.sell_list_num 설정이 비었습니다. variable_setting 함수에서 self.sell_list_num을 확인해주세요.")
             sys.exit(1)
 
         return sell_list
+
+    # 실시간 시간 업데이트 함수
+    def current_time_update(self, min):
+        # print("current_time_update")
+        sql = "UPDATE all_item_db t set t.`current_time` = '%s' WHERE sell_date = '%s'"
+        self.engine_simulator.execute(sql % (min[8:], 0))
 
     # 실제로 매도를 하는 함수 (매도 한 결과를 all_item_db에 반영)
     def sell_send_order(self, min_date, sell_price, sell_rate, code):
@@ -1713,9 +1728,11 @@ class simulator_func_mysql:
                     self.print_info(min)
                     self.update_all_db_by_min(min)
                     self.update_all_db_etc()
+                    self.current_time_update(min)
                     # 매도 함수
                     self.auto_trade_sell_stock(min, i)
                     # self.buy_stop 이 False 이고, 보유 자산이 있으면 실제 매수를 한다.
+
                     if not self.buy_stop and self.jango_check():
                         # 매수 할 종목을 가져온다
                         self.get_realtime_daily_buy_list()

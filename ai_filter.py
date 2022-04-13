@@ -17,7 +17,6 @@ from library.open_api import setup_sql_mod
 listen(Pool, 'connect', setup_sql_mod)
 listen(Pool, 'first_connect', setup_sql_mod)
 
-
 # 모의투자, 실전투자 일때만 들어오는 함수
 def filter_by_ai(db_name, simul_num):
     from library.simulator_func_mysql import simulator_func_mysql
@@ -40,7 +39,7 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     model = create_model(n_steps=ai_settings['n_steps'], loss=ai_settings['loss'], units=ai_settings['units'],
                          n_layers=ai_settings['n_layers'], dropout=ai_settings['dropout'])
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=50)  # 50번이상 더 좋은 결과가 없으면 학습을 멈춤
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10)  # 50번이상 더 좋은 결과가 없으면 학습을 멈춤
 
     model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
                         batch_size=ai_settings['batch_size'],
@@ -78,6 +77,7 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     elif ratio < 0: # lookup_step(분, 일) 후 하락 예상일 경우 출력 메시지
         msg += f'    {ratio:.2f}% ⯆ '
     print(msg, end=' ')
+
     return ai_settings['ratio_cut'] >= ratio # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
 
 
@@ -94,6 +94,9 @@ def create_training_engine(db_name):
 
 
 def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
+
+    engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 25""")
+
     if ai_filter_num == 1:
         ai_settings = {
             "n_steps": 100,  # 시퀀스 데이터를 몇개씩 담을지 설정
@@ -179,6 +182,10 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
             """.format(','.join(feature_columns), code_name, until)
             # pandas(pd) read_sql 을 사용하면 sql, engine을 넘겼을 때 return 값을 바로 데이터프레임으로 받을 수 있음
             df = pd.read_sql(sql, tr_engine)
+            #realtime_daily_buy_list 테이블에 AI 예측값 추가
+            engine.execute(f"""UPDATE realtime_daily_buy_list SET AI_Pre = ratio WHERE code_name = code_name""")
+            #AI 예측값 순으로 realtime_daily_buy_list 테이블 정렬
+            engine.execute(f"""alter table realtime_daily_buy_list order by AI_Pre desc;""")
 
             # 데이터가 1000개(1000일 or 1000분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
             if len(df) < 1000:

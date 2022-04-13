@@ -3,8 +3,11 @@ print(f"trader Version: {ver}")
 
 from library.open_api import *
 from PyQt5.QtWidgets import *
+from datetime import datetime
+
 
 logger.debug("trader start !!!!!!")
+
 
 
 class Trader(QMainWindow):
@@ -13,10 +16,17 @@ class Trader(QMainWindow):
         super().__init__()
         # 예제에 사용한 openapi는 사용하지 않습니다. library.open_api를 사용합니다.
         self.open_api = open_api()
+        # 예제에 사용한 openapi는 사용하지 않습니다. library.open_api를 사용합니다.
         # 현재 시간을 저장
         self.current_time = QTime.currentTime()
         # 변수 설정 함수
         self.variable_setting()
+
+    # # 실시간 시간 업데이트 함수
+    # def current_time_update_2(self, min):
+    #     # print("current_time_update")
+    #     sql = "UPDATE all_item_db t set t.`current_time` = '%s' WHERE sell_date = '%s'"
+    #     self.engine_simulator.execute(sql % (min, 0))
 
     # 변수 설정 함수
     def variable_setting(self):
@@ -145,6 +155,9 @@ class Trader(QMainWindow):
             time.sleep(0.3)
             # 날짜 세팅
             self.open_api.date_setting()
+            # 실시간 시간 업데이트 함수
+            min = int(str(datetime.now().hour) + str(datetime.now().minute))
+            self.open_api.current_time_update_trade(min)
             # 시간 체크
             if self.market_time_check():
                 # 우선 조건에 맞으면 매도

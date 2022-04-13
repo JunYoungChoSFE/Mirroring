@@ -393,7 +393,7 @@ class collector_api():
                                      'yes_clo5', 'yes_clo10', 'yes_clo20', 'yes_clo40', 'yes_clo60', 'yes_clo80',
                                      'yes_clo100', 'yes_clo120',
                                      'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80',
-                                     'vol100', 'vol120'
+                                     'vol100', 'vol120', 'AI_Pre'
                                      ])
 
         df_temp = df_temp.sort_values(by=['date'], ascending=True)
@@ -465,13 +465,13 @@ class collector_api():
                  'clo80', 'clo100', 'clo120',
                  'yes_clo5', 'yes_clo10', 'yes_clo20', 'yes_clo40', 'yes_clo60', 'yes_clo80', 'yes_clo100',
                  'yes_clo120',
-                 'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80', 'vol100', 'vol120']] = \
+                 'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80', 'vol100', 'vol120', 'AI_Pre']] = \
             df_temp[
                 ['close', 'open', 'high', 'low', 'volume', 'sum_volume', 'clo5', 'clo10', 'clo20', 'clo40', 'clo60',
                  'clo80', 'clo100', 'clo120',
                  'yes_clo5', 'yes_clo10', 'yes_clo20', 'yes_clo40', 'yes_clo60', 'yes_clo80', 'yes_clo100',
                  'yes_clo120',
-                 'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80', 'vol100', 'vol120']].fillna(0).astype(int)
+                 'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80', 'vol100', 'vol120', 'AI_Pre']].fillna(0).astype(int)
         temp_date = self.open_api.craw_db_last_min
 
         sum_volume = self.open_api.craw_db_last_min_sum_volume
@@ -596,7 +596,7 @@ class collector_api():
                                      'yes_clo5', 'yes_clo10', 'yes_clo20', 'yes_clo40', 'yes_clo60', 'yes_clo80',
                                      'yes_clo100', 'yes_clo120',
                                      'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80',
-                                     'vol100', 'vol120'
+                                     'vol100', 'vol120', 'AI_Pre'
                                      ])
 
         df_temp = df_temp.sort_values(by=['date'], ascending=True)
@@ -668,13 +668,13 @@ class collector_api():
                  'clo80', 'clo100', 'clo120',
                  'yes_clo5', 'yes_clo10', 'yes_clo20', 'yes_clo40', 'yes_clo60', 'yes_clo80', 'yes_clo100',
                  'yes_clo120',
-                 'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80', 'vol100', 'vol120']] = \
+                 'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80', 'vol100', 'vol120', 'AI_Pre']] = \
             df_temp[
                 ['close', 'open', 'high', 'low', 'volume', 'clo5', 'clo10', 'clo20', 'clo40', 'clo60',
                  'clo80', 'clo100', 'clo120',
                  'yes_clo5', 'yes_clo10', 'yes_clo20', 'yes_clo40', 'yes_clo60', 'yes_clo80', 'yes_clo100',
                  'yes_clo120',
-                 'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80', 'vol100', 'vol120']].fillna(0).astype(int)
+                 'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80', 'vol100', 'vol120', 'AI_Pre']].fillna(0).astype(int)
 
         # inf 를 NaN으로 변경 (inf can not be used with MySQL 에러 방지)
         df_temp = df_temp.replace([numpy.inf, -numpy.inf], numpy.nan)

@@ -99,7 +99,7 @@ class daily_buy_list():
                                              'yes_clo80',
                                              'yes_clo100', 'yes_clo120',
                                              'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80',
-                                             'vol100', 'vol120'
+                                             'vol100', 'vol120', 'AI_Pre'
                                              ])
                 df_temp.to_sql(
                     name=self.date_rows[k][0],

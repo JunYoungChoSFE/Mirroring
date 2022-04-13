@@ -290,7 +290,7 @@ class simulator_func_mysql:
         ###!@####################################################################################################################
         # 아래 부터는 AI 알고리즘 별로 별도의 설정을 해주는 부분
 
-        elif self.simul_num in (21, 22, 23):
+        elif self.simul_num in (21, 22, 23, 24):
 
             # 시뮬레이팅 시작 일자
 
@@ -300,7 +300,7 @@ class simulator_func_mysql:
 
             # 매수 리스트 설정 알고리즘 번호
             self.db_to_realtime_daily_buy_list_num = 5
-            self.total_transaction_price = 3000000000
+            self.total_transaction_price = 500000000
             self.interval_month = 3
             self.vol_mul = 2
             self.d1_diff = 3
@@ -322,7 +322,7 @@ class simulator_func_mysql:
             self.limit_money = 1000000
 
             # 익절 수익률 기준치
-            self.sell_point = 15
+            self.AI_per = 0.8
 
             # 손절 수익률 기준치
             self.losscut_point = -10
@@ -347,13 +347,22 @@ class simulator_func_mysql:
 
             if self.simul_num == 22:
 
+                # 시뮬레이팅 시작 일자
+                self.simul_start_date = "20200604"
                 # AI알고리즘 사용 여부 (고급 챕터에서 소개)
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
-                self.ai_filter_num = 1  # ai 알고리즘 선택
+                self.ai_filter_num = 3  # ai 알고리즘 선택
 
             elif self.simul_num == 23:
                 # 시뮬레이팅 시작 일자
                 self.simul_start_date = "20200604"
+                # AI알고리즘 사용 여부 (고급 챕터에서 소개)
+                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                self.ai_filter_num = 3  # ai 알고리즘 선택
+
+            elif self.simul_num == 24:
+                # 시뮬레이팅 시작 일자
+                self.simul_start_date = "20200605"
                 # AI알고리즘 사용 여부 (고급 챕터에서 소개)
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 3  # ai 알고리즘 선택
@@ -609,7 +618,7 @@ class simulator_func_mysql:
                                                'yes_clo80',
                                                'yes_clo100', 'yes_clo120',
                                                'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80',
-                                               'vol100', 'vol120'])
+                                               'vol100', 'vol120', 'AI_Pre'])
         return df_daily_buy_list
 
     # realtime_daily_buy_list 테이블의 매수 리스트를 가져오는 함수
@@ -638,7 +647,7 @@ class simulator_func_mysql:
                                                              'yes_clo80',
                                                              'yes_clo100', 'yes_clo120',
                                                              'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80',
-                                                             'vol100', 'vol120'])
+                                                             'vol100', 'vol120', 'AI_Pre'])
 
         self.len_df_realtime_daily_buy_list = len(self.df_realtime_daily_buy_list)
 
@@ -759,7 +768,7 @@ class simulator_func_mysql:
             "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)"\
             "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)"\
             "and a.close < '%s' " \
-            "order by vol20 * clo20 desc"
+            "order by clo20_diff_rate desc"
 
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.total_transaction_price, self.vol_mul, self.d1_diff, date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
 
@@ -864,7 +873,7 @@ class simulator_func_mysql:
                                                             'yes_clo80',
                                                             'yes_clo100', 'yes_clo120',
                                                             'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80',
-                                                            'vol100', 'vol120'])
+                                                            'vol100', 'vol120', 'AI_Pre'])
 
             # lamda는 익명 함수이다. 여기서 int로 param을 보내야 6d ( 정수) 에서 안걸린다.
             df_realtime_daily_buy_list['code'] = df_realtime_daily_buy_list['code'].apply(
@@ -1389,8 +1398,9 @@ class simulator_func_mysql:
             # select 할 컬럼은 항상 코드명, 수익률, 매도할 종목의 현재가, 수익(손실)금액
             # sql 첫 번째 라인은 항상 고정
             sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
-                  "and (`current_time` > '%s') group by code"
-            sell_list = self.engine_simulator.execute(sql % (0, self.cut_time)).fetchall()
+                  "and (rate >= AI_Pre * '%s' or rate <= '%s' or `current_time` > '%s') group by code"
+            sell_list = self.engine_simulator.execute(sql % (0, self.AI_per, self.losscut_point, self.cut_time)).fetchall()
+
 
         ##################################################################################################################################################################################################################
         else:
@@ -1771,6 +1781,8 @@ class simulator_func_mysql:
             self.update_all_db_etc()
             # 매도 함수
             self.auto_trade_sell_stock(date_rows_today, i)
+            #시간 업데이트
+            self.current_time_update(date_rows_today)
 
             # 보유 자산이 있다면, 실제 매수를 한다.
             if self.jango_check():

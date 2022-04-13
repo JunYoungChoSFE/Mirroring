@@ -1156,6 +1156,12 @@ class open_api(QAxWidget):
         sql = "UPDATE setting_data SET final_chegyul_check='%s' limit 1"
         self.engine_JB.execute(sql % (self.today))
 
+    # 실시간 시간 업데이트 함수
+    def current_time_update_trade(self, min):
+        logger.debug("current_time_update: " + str(min))
+        sql = "UPDATE all_item_db t set t.`current_time` = '%s' WHERE sell_date = '%s'"
+        self.engine_JB.execute(sql % (min, 0))
+
     # all_item_db의 rate를 업데이트 한다.
     def rate_check(self):
         logger.debug("rate_check!!!")

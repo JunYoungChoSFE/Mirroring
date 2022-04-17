@@ -1135,7 +1135,7 @@ class open_api(QAxWidget):
 
         self.rq_count += 1
         # openapi 조회 count 출력
-        logger.debug(self.rq_count)
+        # logger.debug(self.rq_count)
         if self.rq_count == cf.max_api_call:
             sys.exit(1)
 

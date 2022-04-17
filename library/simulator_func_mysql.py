@@ -362,7 +362,7 @@ class simulator_func_mysql:
 
             elif self.simul_num == 24:
                 # 시뮬레이팅 시작 일자
-                self.simul_start_date = "20200605"
+                self.simul_start_date = "20210410"
                 # AI알고리즘 사용 여부 (고급 챕터에서 소개)
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 3  # ai 알고리즘 선택
@@ -502,7 +502,7 @@ class simulator_func_mysql:
                                        charset='utf8')
 
     # 매수 함수
-    def invest_send_order(self, date, code, code_name, price, yes_close, j):
+    def invest_send_order(self, date, code, code_name, price, yes_close, AI_Pre, j):
         # print("invest_send_order!!!")
         # 시작가가 투자하려는 금액 보다 작아야 매수가 가능하기 때문에 아래 조건
         if price < self.invest_unit:
@@ -512,7 +512,7 @@ class simulator_func_mysql:
             self.db_to_all_item(date, self.df_realtime_daily_buy_list, j,
                                 code,
                                 code_name, price,
-                                yes_close)
+                                yes_close, AI_Pre)
 
             # 매수를 성공적으로 했으면 realtime_daily_buy_list 테이블의 check_item 에 매수 시간을 설정
             self.update_realtime_daily_buy_list(code, date)
@@ -768,7 +768,7 @@ class simulator_func_mysql:
             "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)"\
             "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)"\
             "and a.close < '%s' " \
-            "order by clo20_diff_rate desc"
+            "order by (volume - vol20) desc"
 
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.total_transaction_price, self.vol_mul, self.d1_diff, date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
 
@@ -895,7 +895,7 @@ class simulator_func_mysql:
                 df_realtime_daily_buy_list.to_sql('realtime_daily_buy_list', self.engine_simulator, if_exists='replace')
 
                 # 현재 보유 중인 종목은 매수 리스트(realtime_daily_buy_list) 에서 제거 하는 로직
-                if self.is_simul_table_exist(self.db_name, "all_item_db"):
+                if self.is_simul_table_exist(self.db_name, "all_itemall_item"):
                     sql = "delete from realtime_daily_buy_list where code in (select code from all_item_db where sell_date = '%s' or buy_date = '%s' or sell_date = '%s')"
                     # delete는 리턴 값이 없기 때문에 fetchall 쓰지 않는다.
                     self.engine_simulator.execute(sql % (0, date_rows_today, date_rows_today))
@@ -1013,7 +1013,8 @@ class simulator_func_mysql:
                                               'volume', 'clo5', 'clo10', 'clo20', 'clo40', 'clo60', 'clo80',
                                               'clo100', 'clo120', "clo5_diff_rate", "clo10_diff_rate",
                                               "clo20_diff_rate", "clo40_diff_rate", "clo60_diff_rate",
-                                              "clo80_diff_rate", "clo100_diff_rate", "clo120_diff_rate", "current_time"])
+                                              "clo80_diff_rate", "clo100_diff_rate", "clo120_diff_rate", "current_time",
+                                              "AI_Pre"])
 
     # 가장 초기에 매수 했을 때 all_item_db 에 추가하는 함수
     def db_to_all_item(self, min_date, df, index, code, code_name, purchase_price, yesterday_close):

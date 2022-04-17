@@ -71,6 +71,8 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     ratio = (future_price - close) / close * 100
 
     msg = f"After {ai_settings['lookup_step']}: {int(close)} -> {int(future_price)}"
+    # # realtime_daily_buy_list 테이블에 AI 예측값 추가
+    # engine.execute(f"""UPDATE realtime_daily_buy_list SET `AI_Pre` = ratio WHERE code_name = code_name""")
 
     if ratio > 0: # lookup_step(분, 일) 후 상승 예상일 경우 출력 메시지
         msg += f'    {ratio:.2f}% ⯅ '
@@ -182,10 +184,9 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
             """.format(','.join(feature_columns), code_name, until)
             # pandas(pd) read_sql 을 사용하면 sql, engine을 넘겼을 때 return 값을 바로 데이터프레임으로 받을 수 있음
             df = pd.read_sql(sql, tr_engine)
-            #realtime_daily_buy_list 테이블에 AI 예측값 추가
-            engine.execute(f"""UPDATE realtime_daily_buy_list SET AI_Pre = ratio WHERE code_name = code_name""")
-            #AI 예측값 순으로 realtime_daily_buy_list 테이블 정렬
-            engine.execute(f"""alter table realtime_daily_buy_list order by AI_Pre desc;""")
+
+            # #AI 예측값 순으로 realtime_daily_buy_list 테이블 정렬
+            # engine.execute(f"""alter table realtime_daily_buy_list order by `AI_Pre` desc;""")
 
             # 데이터가 1000개(1000일 or 1000분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
             if len(df) < 1000:

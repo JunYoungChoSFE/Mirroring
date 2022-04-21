@@ -98,7 +98,10 @@ def create_training_engine(db_name):
 
 def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
 
-    engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 250""")
+    engine.execute("""UPDATE realtime_daily_buy_list SET level_0 = 0""")
+    engine.execute("""SELECT @level_0:=0 from realtime_daily_buy_list""")
+    engine.execute("""UPDATE realtime_daily_buy_list SET level_0=@level_0:=@level_0+1 ORDER BY level_0""")
+    engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 25""")
 
     if ai_filter_num == 1:
         ai_settings = {
@@ -145,7 +148,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
     elif ai_filter_num == 3:
         ai_settings = {
             "n_steps": 100,  # 시퀀스 데이터를 몇개씩 담을지 설정
-            "lookup_step": 1,  # 단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+            "lookup_step": 180,  # 단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
             "test_size": 0.2,
             # train 범위 : test_size 가 0.2 이면 X_train, y_train에 80% 데이터로 트레이닝 하고 X_test,y_test에 나머지 20%로 테스트를 하겠다는 의미
             "n_layers": 4,  # LSTM layer 개수
@@ -156,7 +159,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
             "batch_size": 1024,  # 각 학습 반복에 사용할 데이터 샘플 수
             "epochs": 200,  # 몇 번 테스트 할지
             "ratio_cut": 0.3,  # 단위:(%) lookup_step 기간 뒤 ratio_cut(%) 만큼 증가 할 것이 예측 된다면 매수
-            "table": "daily_craw",
+            "table": "min_craw",
             # 분석 시 daily_craw(일별데이터)를 이용 할지 min_craw(분별데이터)를 이용 할지 선택. ** 주의: min_craw 선택 시 최근 1년 데이터만 있기 때문에 simulator_func_mysql.py에서 self.simul_start_date를 최근 1년 전으로 설정 필요
             "is_used_predicted_close": True
             # ratio(예상 상승률) 계산 시 예측 그래프의 close 값을 이용 할 경우 True, 실제 close 값을 이용할 시 False

@@ -31,13 +31,14 @@ conn = pymysql.connect(host=cf.db_ip,
                        port=int(cf.db_port),
                        user=cf.db_id,
                        password=cf.db_passwd,
-                       db='min_craw',
+                       db='daily_craw',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
 FEATURE_COLUMNS = ["date","close", "volume", "open", "high", "low"]
+##!@####
 code_name = '삼성전자'
-until = '20220408'
+until = '20220419'
 sql = """
     SELECT {} FROM `{}`
     WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
@@ -65,7 +66,7 @@ df_temp = df[['volume', 'close']].values
 scaler = MinMaxScaler()
 sc_df = scaler.fit_transform(df_temp)
 
-N_STEPS = 5 # 시퀀스 데이터를 몇개씩 담을지 설정.
+N_STEPS = 100 # 시퀀스 데이터를 몇개씩 담을지 설정.
             # 5개씩 데이터를 넣겠다(lstm은 시퀀스 데이터를 다루는 모델이라 여러개의 값을 넣는것 )
 
 X=[]
@@ -144,7 +145,7 @@ plt.plot(y_test.ravel(), 'b-', label = 'y_test')
 # plt.plot((pred_y-y_test).ravel(), 'g-', label = 'diff*10')
 
 plt.legend() # 범례 표시
-plt.title("samsung")
+plt.title(code_name)
 plt.show()
 
 # history : 학습한 history를 저장하고 있음

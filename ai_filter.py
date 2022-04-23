@@ -9,6 +9,7 @@ from sqlalchemy.event import listen
 from sqlalchemy.pool import Pool
 from sqlalchemy.exc import InternalError, ProgrammingError
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint
 
 from ai.SPPModel import load_data, create_model, evaluate, predict, DataNotEnough
 from library import cf
@@ -41,12 +42,13 @@ def filtered_by_basic_lstm(dataset, ai_settings):
 
     early_stopping = EarlyStopping(monitor='val_loss', patience=10)  # 50번이상 더 좋은 결과가 없으면 학습을 멈춤
 
-    model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
+    h = model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
                         batch_size=ai_settings['batch_size'],
                         epochs=ai_settings['epochs'],
                         validation_data=(shuffled_data["X_test"], shuffled_data["y_test"]),
                         callbacks=[early_stopping],
                         verbose=1)
+
 
     scaled_data = load_data(df=dataset.copy(), n_steps=ai_settings['n_steps'], test_size=ai_settings['test_size'],
                             shuffle=False)
@@ -74,6 +76,11 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     # # realtime_daily_buy_list 테이블에 AI 예측값 추가
     # engine.execute(f"""UPDATE realtime_daily_buy_list SET `AI_Pre` = ratio WHERE code_name = code_name""")
 
+    # loss_val 저장
+    loss_list = h.history['loss']
+    loss_val = loss_list[-1]
+    # loss_val = abs(y_pred[-1] - dataset.iloc[-1]['close']) / dataset.iloc[-1]['close'] * 100
+
     if ratio > 0: # lookup_step(분, 일) 후 상승 예상일 경우 출력 메시지
         msg += f'    {ratio:.2f}% ⯅ '
     elif ratio < 0: # lookup_step(분, 일) 후 하락 예상일 경우 출력 메시지
@@ -81,7 +88,7 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     print(msg, end=' ')
 
     # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상
-    return ai_settings['ratio_cut'] >= ratio, ratio
+    return ai_settings['ratio_cut'] >= ratio, ratio, loss_val
 
 
 def create_training_engine(db_name):
@@ -98,7 +105,7 @@ def create_training_engine(db_name):
 
 def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
 
-    engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 250""")
+    engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 500""")
 
     if ai_filter_num == 1:
         ai_settings = {
@@ -155,7 +162,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
             "optimizer": "adam",  # optimizer : 최적화 알고리즘 선택
             "batch_size": 1024,  # 각 학습 반복에 사용할 데이터 샘플 수
             "epochs": 200,  # 몇 번 테스트 할지
-            "ratio_cut": 0.3,  # 단위:(%) lookup_step 기간 뒤 ratio_cut(%) 만큼 증가 할 것이 예측 된다면 매수
+            "ratio_cut": 0,  # 단위:(%) lookup_step 기간 뒤 ratio_cut(%) 만큼 증가 할 것이 예측 된다면 매수
             "table": "daily_craw",
             # 분석 시 daily_craw(일별데이터)를 이용 할지 min_craw(분별데이터)를 이용 할지 선택. ** 주의: min_craw 선택 시 최근 1년 데이터만 있기 때문에 simulator_func_mysql.py에서 self.simul_start_date를 최근 1년 전으로 설정 필요
             "is_used_predicted_close": True
@@ -196,15 +203,16 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
                 continue
             try:
-                filtered, ratio = filtered_by_basic_lstm(df, ai_settings)
+                filtered, ratio, loss_val = filtered_by_basic_lstm(df, ai_settings)
 
                 r = float(round(ratio,2))
+                l = float(round(float(loss_val),5))
                 # realtime_daily_buy_list 테이블에 AI 예측값 추가
                 # WHERE code_name = 'code_name'ALTER TABLE realtime_daily_buy_list MODIFY AI_Pre FLOAT(3);
-                engine.execute("""ALTER TABLE realtime_daily_buy_list MODIFY AI_Pre FLOAT(3)""")
-                engine.execute("""UPDATE realtime_daily_buy_list SET AI_Pre = {} WHERE code_name = '{}'""".format(r, code_name))
+                engine.execute("""ALTER TABLE realtime_daily_buy_list MODIFY AI_Pre FLOAT(5)""")
+                engine.execute("""UPDATE realtime_daily_buy_list SET AI_Pre = {} WHERE code_name = '{}'""".format(l, code_name))
                 # AI 예측값 순으로 realtime_daily_buy_list 테이블 정렬
-                engine.execute("""alter table realtime_daily_buy_list order by AI_Pre desc;""")
+                engine.execute("""alter table realtime_daily_buy_list order by AI_Pre;""")
 
             except (DataNotEnough, ValueError):
                 print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")

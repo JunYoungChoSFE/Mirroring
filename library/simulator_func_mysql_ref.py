@@ -84,7 +84,6 @@ class simulator_func_mysql:
         sql = "update realtime_daily_buy_list set check_item = '%s' where code = '%s'"
         self.engine_simulator.execute(sql % (min_date, code))
 
-
     # 시뮬레이션 옵션 설정 함수
     def variable_setting(self):
         # 아래 if문으로 들어가기 전까지의 변수들은 모든 알고리즘에 공통적으로 적용 되는 설정
@@ -118,7 +117,7 @@ class simulator_func_mysql:
         ###!@####################################################################################################################
         # 아래 부터는 알고리즘 별로 별도의 설정을 해주는 부분
 
-        if self.simul_num in (1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14):
+        if self.simul_num in (1, 4, 5, 6, 7, 8, 9, 10, 11):
 
             # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
             self.simul_start_date = "19850101"
@@ -214,1100 +213,6 @@ class simulator_func_mysql:
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 1  # ai 알고리즘 선택
 
-            # 실시간 조건 매수
-            elif self.simul_num in (12, 13, 14):
-                self.simul_start_date = "20210618"
-                self.use_min = True
-                # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션, trader 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
-                self.only_nine_buy = False
-                # 실시간 조건 매수 옵션 (고급 챕터에서 소개) self.only_nine_buy 옵션을 반드시 False로 설정해야함
-                self.trade_check_num = 1  # 실시간 조건 매수 알고리즘 선택 (1,2,3..)
-                # 특정 거래대금 보다 x배 이상 증가 할 경우 매수
-                self.volume_up = 2
-                #
-                if self.simul_num == 13:
-                    self.trade_check_num = 2
-                    # 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
-                    self.invest_limit_rate = 1.01
-                    # 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
-                    self.invest_min_limit_rate = 0.98
-
-                # 래리윌리엄스 변동성 돌파 전략
-                elif self.simul_num == 14:
-                    self.trade_check_num = 3
-                    self.rarry_k = 0.5
-
-        # !@@@@ 실시간 알고리즘
-
-        elif self.simul_num in (100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 180):
-            self.start_invest_price = 10000000
-            self.simul_start_date = "20210618"
-            self.use_min = True
-            # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션, trader 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
-            self.only_nine_buy = False
-            # 실시간 조건 매수 옵션 (고급 챕터에서 소개) self.only_nine_buy 옵션을 반드시 False로 설정해야함
-            # 매수 금액
-            self.invest_unit = (self.start_invest_price * 0.9) / 5
-            # 자산 중 최소로 남겨 둘 금액
-            self.limit_money = self.start_invest_price / 10
-            # 매수 리스트 설정 알고리즘 번호
-            self.db_to_realtime_daily_buy_list_num = 8
-            self.total_transaction_price = 500000000
-            self.interval_month = 3
-            self.vol_mul = 2
-            self.d1_diff = 3
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 10% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_limit_rate = 1.10
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -10% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_min_limit_rate = 0.9
-
-            if self.simul_num == 100:
-                self.trade_check_num = 4
-                self.rarry_k = 0.5
-                self.volume_up = 1
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 101:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 1.5
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 102:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 1.5
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 103:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 1.5
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 104:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 1.5
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 4
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 105:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 1.5
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 5
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 106:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 107:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 108:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 109:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 4
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 110:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 5
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-
-            elif self.simul_num == 111:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -2
-                self.cut_time = 1430
-
-            elif self.simul_num == 112:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 113:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 114:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 115:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -1
-                self.cut_time = 1430
-
-            elif self.simul_num == 116:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -2
-                self.cut_time = 1430
-
-            elif self.simul_num == 117:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 117:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 118:
-                self.trade_check_num = 1
-                self.rarry_k = 0.5
-                self.volume_up = 2
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 119:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 120:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 121:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 122:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 4
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 123:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 5
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-
-            elif self.simul_num == 124:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -2
-                self.cut_time = 1430
-
-            elif self.simul_num == 125:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 126:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 127:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 128:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -1
-                self.cut_time = 1430
-
-            elif self.simul_num == 129:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -2
-                self.cut_time = 1430
-
-            elif self.simul_num == 130:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 131:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 132:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 133:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 134:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 135:
-                self.trade_check_num = 5
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-
-            elif self.simul_num == 141:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 142:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 143:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 144:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 4
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 145:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 5
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-
-            elif self.simul_num == 146:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -2
-                self.cut_time = 1430
-
-            elif self.simul_num == 147:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 148:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 149:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 150:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -1
-                self.cut_time = 1430
-
-            elif self.simul_num == 151:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -2
-                self.cut_time = 1430
-
-            elif self.simul_num == 152:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 153:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 154:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0.5
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 155:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1430
-
-            elif self.simul_num == 156:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -4
-                self.cut_time = 1430
-
-            elif self.simul_num == 157:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 24
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 158:
-                self.trade_check_num = 3
-                self.rarry_k = 0.6
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 905
-
-            elif self.simul_num == 159:
-                self.trade_check_num = 3
-                self.rarry_k = 0.5
-                self.volume_up = 10
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 905
-
-            elif self.simul_num == 160:
-                self.trade_check_num = 3
-                self.rarry_k = 0.6
-                self.volume_up = 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 9
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 905
-
-            elif self.simul_num == 161:
-                self.trade_check_num = 3
-                self.rarry_k = 0.6
-                self.volume_up = 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 18
-                self.day_before = 20 # 단위 일
-                # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
-                self.diff_point = 1 # 단위 %
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 905
-
-            elif self.simul_num == 162:
-                self.trade_check_num = 3
-                self.rarry_k = 0.6
-                self.volume_up = 10
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 10
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 1006
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 905
-
-            elif self.simul_num == 163:
-                self.trade_check_num = 4
-                self.rarry_k = 0.6
-                self.volume_up = 5
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 10
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 1006
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 905
-
-            elif self.simul_num == 164:
-                self.trade_check_num = 4
-                self.rarry_k = 0.6
-                self.volume_up = 5
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 10
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 1006
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 905
-
-            elif self.simul_num == 165:
-                self.trade_check_num = 4
-                self.rarry_k = 0.6
-                self.volume_up = 10
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 10
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 1006
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 905
-
-            elif self.simul_num == 166:
-                self.trade_check_num = 4
-                self.rarry_k = 0.6
-                self.volume_up = 10
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 10
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 1006
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 905
-
-            elif self.simul_num == 167:
-                self.trade_check_num = 3
-                self.rarry_k = 0.6
-                self.volume_up = 10
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 10
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 1007
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 905
-
-            elif self.simul_num == 168:
-                self.trade_check_num = 1
-                self.rarry_k = 0.6
-                self.volume_up = 10
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 10
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 9
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1000
-
-            elif self.simul_num == 169:
-                self.trade_check_num = 1
-                self.rarry_k = 0.6
-                self.volume_up = 5
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 10
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 9
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -5
-                self.cut_time = 1000
-
-            elif self.simul_num == 170:
-                self.trade_check_num = 6
-                self.rarry_k = 0.6
-                self.volume_up = 6
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 50
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 11
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 27
-                # 익절 수익률 기준치
-                self.sell_point = 1
-                # 익절 수익률 기준치2
-                self.sell_point2 = 0
-                # 손절 수익률 기준치
-                self.losscut_point = -30
-                self.cut_time = 1430
-
-            elif self.simul_num == 171:
-                self.trade_check_num = 6
-                self.rarry_k = 0.6
-                self.volume_up = 6
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 25
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 11
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 28
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -3
-                self.cut_time = 1430
-
-            elif self.simul_num == 180:
-                self.trade_check_num = 3
-                self.rarry_k = 0.6
-                self.volume_up = 6
-                # 매수 금액
-                self.invest_unit = (self.start_invest_price * 0.9) / 3
-                # 자산 중 최소로 남겨 둘 금액
-                self.limit_money = self.start_invest_price / 10
-                # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 1007
-                # 매도 리스트 설정 알고리즘 번호
-                self.sell_list_num = 26
-                # 익절 수익률 기준치
-                self.sell_point = 2
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -10
-                self.cut_time = 905
-                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
-                self.ai_filter_num = 4  # ai 알고리즘 선택
-
-        # !@@@@ 실시간 알고리즘
-
         elif self.simul_num == 2:
             # 시뮬레이팅 시작 일자
             self.simul_start_date = "19850101"
@@ -1389,7 +294,7 @@ class simulator_func_mysql:
         ###!@####################################################################################################################
         # 아래 부터는 AI 알고리즘 별로 별도의 설정을 해주는 부분
 
-        elif self.simul_num in (21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31):
+        elif self.simul_num in (21, 22, 23, 24, 25, 26, 27, 28, 29, 30):
 
             # 시뮬레이팅 시작 일자
 
@@ -1544,19 +449,15 @@ class simulator_func_mysql:
                 self.ai_filter_num = 4  # ai 알고리즘 선택
                 self.cut_time = 1430
 
-            elif self.simul_num == 31:
+            elif self.simul_num == 30:
                 # 매수 금액
                 self.invest_unit = (self.start_invest_price * 0.9) / 5
                 # 자산 중 최소로 남겨 둘 금액
                 self.limit_money = self.start_invest_price / 10
-                # 익절 수익률 기준치
-                self.sell_point = 3
-                # 익절 수익률 기준치2
-                self.sell_point2 = 1
-                # 손절 수익률 기준치
-                self.losscut_point = -10
+                # 수익률 기준치
+                self.sell_point = 2.3
                 # 매수 리스트 설정 알고리즘 번호
-                self.db_to_realtime_daily_buy_list_num = 1005
+                self.db_to_realtime_daily_buy_list_num = 1002
                 # 시뮬레이팅 시작 일자
                 self.simul_start_date = "20212001"
                 # 매도 리스트 설정 알고리즘 번호
@@ -1695,79 +596,33 @@ class simulator_func_mysql:
         # 볼린저밴드 알고리즘을 위해 추가된 부분 2 (알고리즘 번호 설정)
         # **self.simul_num** if 조건문 제일 아래에 추가해주세요
         # ~!
-        elif self.simul_num == 1010:
+        elif self.simul_num == 1004:
             # 시뮬레이팅 시작 일자
-            self.simul_start_date = "20211101"
+            self.simul_start_date = "20210301"
 
             ######### 알고리즘 선택 #############
             # 매수 리스트 설정 알고리즘 번호
-            self.db_to_realtime_daily_buy_list_num = 1004
+            self.db_to_realtime_daily_buy_list_num = 1002
             # 매도 리스트 설정 알고리즘 번호
-            self.sell_list_num = 24
-            self.cut_time = 1430
+            self.sell_list_num = 1001
+            self.cut_time = 1200
             self.interval_month = 3
             ###################################
 
             # 익절 수익률 기준치
-            self.sell_point = 2
-
-            # 익절 수익률 기준치2
-            self.sell_point2 = 1
+            self.sell_point = 15
 
             # 손절 수익률 기준치
-            self.losscut_point = -5
+            self.losscut_point = -15
 
             # 초기 투자자금
             self.start_invest_price = 10000000
 
-            # 매수 금액
-            self.invest_unit = (self.start_invest_price * 0.9) / 10
+            # 매수 금액#################################################
+            self.invest_unit = 1000000
+
             # 자산 중 최소로 남겨 둘 금액
-            self.limit_money = self.start_invest_price / 10
-
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_limit_rate = 1.01
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_min_limit_rate = 0.98
-
-            # 분별 시뮬레이션 옵션
-            self.use_min = True
-            self.only_nine_buy = True
-        # END ###############################################################
-
-        # START !@#############################################################################################################
-        # 볼린저밴드 알고리즘을 위해 추가된 부분 2 (알고리즘 번호 설정)
-        # **self.simul_num** if 조건문 제일 아래에 추가해주세요
-        # ~!
-        elif self.simul_num == 1014:
-            # 시뮬레이팅 시작 일자
-            self.simul_start_date = "20211101"
-
-            ######### 알고리즘 선택 #############
-            # 매수 리스트 설정 알고리즘 번호
-            self.db_to_realtime_daily_buy_list_num = 1005
-            # 매도 리스트 설정 알고리즘 번호
-            self.sell_list_num = 25
-            self.cut_time = 1430
-            self.interval_month = 3
-            ###################################
-
-            # 익절 수익률 기준치
-            self.sell_point = 3
-
-            # 익절 수익률 기준치2
-            self.sell_point2 = 1
-
-            # 손절 수익률 기준치
-            self.losscut_point = -4
-
-            # 초기 투자자금
-            self.start_invest_price = 10000000
-
-            # 매수 금액
-            self.invest_unit = (self.start_invest_price * 0.9) / 10
-            # 자산 중 최소로 남겨 둘 금액
-            self.limit_money = self.start_invest_price / 10
+            self.limit_money = 1000000
 
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_limit_rate = 1.01
@@ -2048,11 +903,8 @@ class simulator_func_mysql:
                             continue
                 ################################################################
 
-                # !@@@ 매수 주문에 들어간다.
-                if int(min_date[-4:]) < 1230 and int(min_date[-4:]) > 905 :
-                    self.invest_send_order(min_date, code, code_name, price, yes_close, j)
-                # self.invest_send_order(min_date, code, code_name, price, yes_close, j)
-
+                # 매수 주문에 들어간다.
+                self.invest_send_order(min_date, code, code_name, price, yes_close, j)
             else:
                 break
 
@@ -2081,7 +933,7 @@ class simulator_func_mysql:
                                                'yes_clo100', 'yes_clo120',
                                                'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80',
                                                'vol100', 'vol120', 'current_time', 'AI_Pre',
-                                               'AI_loss', 'BB1', 'BB2', 'BB3', 'd1_diff_target'])
+                                               'AI_loss', 'BB1', 'BB2', 'BB3'])
         return df_daily_buy_list
 
     # realtime_daily_buy_list 테이블의 매수 리스트를 가져오는 함수
@@ -2090,7 +942,7 @@ class simulator_func_mysql:
 
         # 이 부분은 촬영 후 코드를 간소화 했습니다. 조건문 모두 없앴습니다.
         # check_item = 매수 했을 시 날짜가 찍혀 있다. 매수 하지 않았을 때는 0
-        sql = "select * from realtime_daily_buy_list where check_item = '%s' group by code ORDER BY BB1 DESC"
+        sql = "select * from realtime_daily_buy_list where check_item = '%s' group by code"
 
         realtime_daily_buy_list = self.engine_simulator.execute(sql % (0)).fetchall()
 
@@ -2111,7 +963,7 @@ class simulator_func_mysql:
                                                              'yes_clo100', 'yes_clo120',
                                                              'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80',
                                                              'vol100', 'vol120', 'current_time', 'AI_Pre',
-                                                             'AI_loss', 'BB1', 'BB2', 'BB3', 'd1_diff_target'])
+                                                             'AI_loss', 'BB1', 'BB2', 'BB3'])
 
         self.len_df_realtime_daily_buy_list = len(self.df_realtime_daily_buy_list)
 
@@ -2124,7 +976,7 @@ class simulator_func_mysql:
             return False
         return row[0][0]
 
-    # !@실시간 주가 분석 알고리즘 함수 (느낌표 골뱅이 추가하면 검색 시 편합니다) (고급클래스에서 소개)
+    # 실시간 주가 분석 알고리즘 함수 (느낌표 골뱅이 추가하면 검색 시 편합니다) (고급클래스에서 소개)
     def trade_check(self, df_row, open_price, current_price, current_sum_volume):
         '''
         :param df_row: 매수 종목 리스트(realtime_daily_buy_list)
@@ -2133,21 +985,19 @@ class simulator_func_mysql:
         :return: True (매수), False(매수 X)
         '''
         code_name = df_row['code_name']
-        yes_clo20 = df_row['clo20']
         yes_vol20 = df_row['vol20']
         yes_close = df_row['close']
         yes_high = df_row['high']
         yes_low = df_row['low']
         yes_volume = df_row['volume']
 
-        # !@@@실시간 거래 대금 체크 알고리즘
+        # 실시간 거래 대금 체크 알고리즘
         if self.trade_check_num == 1:
             # 어제 거래 대금
             yes_total_tr_price = yes_close * yes_volume
             # 현재 거래 대금
             current_total_tr_price = current_price * current_sum_volume
             # 어제 종가 보다 현재가가 증가했고, 거래 대금이 어제 거래대금에 비해서 x배 올라갔을 때 매수
-            # trade_min = min_date[-4:]
             if current_price > yes_close and current_total_tr_price > yes_total_tr_price * self.volume_up:
                 return True
             else:
@@ -2169,55 +1019,7 @@ class simulator_func_mysql:
             # 변동폭(_range): 전일 고가(yes_high)에서 전일 저가(yes_low)를 뺀 가격
             # 매수시점 : 현재가 > 시작가 + (변동폭 * k)  [k는 0~1 사이 수]
             _range = yes_high - yes_low
-            p_price = float((current_price - yes_close) / yes_close * 100)
-            if open_price + _range * self.rarry_k < current_price and p_price < 29.5:
-                return True
-            else:
-                return False
-
-        # 래리 윌리엄스 변동성 돌파 알고리즘(매수)
-        elif self.trade_check_num == 4:
-            # 변동폭(_range): 전일 고가(yes_high)에서 전일 저가(yes_low)를 뺀 가격
-            # 매수시점 : 현재가 > 시작가 + (변동폭 * k)  [k는 0~1 사이 수]
-            _range = yes_high - yes_low
-            p_price = float((current_price - yes_close) / yes_close * 100)
-            # 어제 거래 대금
-            yes_total_tr_price = yes_close * yes_volume
-            # 현재 거래 대금
-            current_total_tr_price = current_price * current_sum_volume
-            if open_price + _range * self.rarry_k < current_price and p_price < 29.5 and current_total_tr_price > yes_total_tr_price * self.volume_up:
-                return True
-            else:
-                return False
-
-            # 래리 윌리엄스 변동성 돌파 알고리즘(매수)
-        elif self.trade_check_num == 5:
-            p_price = float((current_price - yes_close) / yes_close * 100)
-            if 28 < p_price and p_price < 29.5:
-                return True
-            else:
-                return False
-
-        # 래리 윌리엄스 변동성 돌파 알고리즘(매수)
-        elif self.trade_check_num == 6:
-            # 변동폭(_range): 전일 고가(yes_high)에서 전일 저가(yes_low)를 뺀 가격
-            # 매수시점 : 현재가 > 시작가 + (변동폭 * k)  [k는 0~1 사이 수]
-            _range = yes_high - yes_low
-            p_price = float((current_price - yes_close) / yes_close * 100)
-
-            if open_price > yes_close * 1.01 and open_price < current_price and p_price < 29.5:
-                return True
-            else:
-                return False
-
-        elif self.trade_check_num == 5:
-            # 어제 거래 대금
-            yes_total_tr_price20 = yes_clo20 * yes_vol20
-            # 현재 거래 대금
-            current_total_tr_price = current_price * current_sum_volume
-            # 어제 종가 보다 현재가가 증가했고, 거래 대금이 어제 거래대금에 비해서 x배 올라갔을 때 매수
-            # trade_min = min_date[-4:]
-            if current_price > yes_close and current_total_tr_price > yes_total_tr_price20 * self.volume_up:
+            if open_price + _range * self.rarry_k < current_price:
                 return True
             else:
                 return False
@@ -2314,35 +1116,6 @@ class simulator_func_mysql:
 
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
 
-        elif self.db_to_realtime_daily_buy_list_num == 8:
-            sql = "select * from `" + date_rows_yesterday + "` a " \
-            "where NOT exists (select null from stock_konex b where a.code=b.code)" \
-            "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
-            "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
-            "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)"\
-            "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)"\
-            "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)"\
-            "and a.close < '%s' " \
-            "and NOT code_name = '넥슨지티' " \
-            "and (clo20 * vol20) > 600000000 " \
-            "order by (high-low)/close desc limit 100"
-
-            realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
-
-        elif self.db_to_realtime_daily_buy_list_num == 9:
-            sql = "select * from `" + date_rows_yesterday + "` a " \
-            "where NOT exists (select null from stock_konex b where a.code=b.code)" \
-            "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
-            "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
-            "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)"\
-            "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)"\
-            "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)"\
-            "and a.close < '%s' " \
-            "and NOT code_name = '넥슨지티' " \
-            "and (clo20 * vol20) > 600000000 " \
-            "order by (high-low)/close desc limit 500"
-
-            realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
 
         elif self.db_to_realtime_daily_buy_list_num == 10:
             sql = "select * from `" + date_rows_yesterday + "` a " \
@@ -2352,23 +1125,8 @@ class simulator_func_mysql:
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
 
 
-        elif self.db_to_realtime_daily_buy_list_num == 11:
-            sql = "select * from `" + date_rows_yesterday + "` a " \
-            "where NOT exists (select null from stock_konex b where a.code=b.code)" \
-            "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
-            "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
-            "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)"\
-            "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)"\
-            "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)"\
-            "and a.close < '%s' " \
-            "and NOT code_name = '넥슨지티' " \
-            "and (clo20 * vol20) > 600000000 "
-
-            realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
-
-
         # 절대 모멘텀 전략 : 특정일 전의 종가 보다 n% 이상 상승한 종목 매수 (code version)
-        elif self.db_to_realtime_daily_buy_list_num == 17:
+        elif self.db_to_realtime_daily_buy_list_num == 7:
             # 아래에서 필터링 된 매수종목을 append 해주기 위해 비어있는 리스트를 만들어준다.
             realtime_daily_buy_list = []
             if i < self.day_before + 1:
@@ -2398,7 +1156,7 @@ class simulator_func_mysql:
 
 
         # 절대 모멘텀 전략 : 특정일 전의 종가 보다 n% 이상 상승한 종목 매수 (query vesrion)
-        elif self.db_to_realtime_daily_buy_list_num == 18:
+        elif self.db_to_realtime_daily_buy_list_num == 8:
             if i < self.day_before + 1:
                 realtime_daily_buy_list = []
                 pass
@@ -2414,7 +1172,7 @@ class simulator_func_mysql:
                 realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.diff_point, self.invest_unit)).fetchall()
 
         # 상대 모멘텀 전략 : 특정일 전의 종가 보다 n% 이상 상승한 종목 중 가장 많이 상승한 종목 순으로 매수 (내림차순) (query version)
-        elif self.db_to_realtime_daily_buy_list_num == 19:
+        elif self.db_to_realtime_daily_buy_list_num == 9:
             if i < self.day_before + 1:
                 realtime_daily_buy_list = []
                 pass
@@ -2482,7 +1240,7 @@ class simulator_func_mysql:
                         result = BBands(pd.DataFrame(df_close), w=ma_period)
                         # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
                         if result:
-                            mom, mom_1, mom_sig, mom_sig_1, mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
+                            mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
                             # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치
                             b1 = bw_m * 2
                             if perb > 0.8 and bw > b1:
@@ -2545,7 +1303,7 @@ class simulator_func_mysql:
                         result = BBands(pd.DataFrame(df_close), w=ma_period)
                         # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
                         if result:
-                            mom, mom_1, mom_sig, mom_sig_1, mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
+                            mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
                             # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치
                             b1 = bw_m * 1.15
                             if perb_1 < 1.2 and perb > 1 and bw > b1:
@@ -2608,223 +1366,11 @@ class simulator_func_mysql:
                         result = BBands(pd.DataFrame(df_close), w=ma_period)
                         # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
                         if result:
-                            mom, mom_1, mom_sig, mom_sig_1, mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
+                            mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
                             # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치
-                            b1 = bw_m * 1
-                            BB1 = (bw - bw_m) / bw_m
-                            if perb_1 < 1 and perb > 1 and bw > b1:
-                                item2 = list(item)
-                                item2[-3] = BB1
-                                realtime_daily_buy_list.append(item2)
-
-        # END ################################################################################################################
-
-        # START !@@##############################################################################################################
-        # 볼린저밴드 알고리즘을 위해 추가된 부분 3 (매수 리스트 알고리즘)
-        # 마지막 **db_to_realtime_daily_buy_list_num** if 조건문 제일 아래에 추가해주시기 바랍니다.
-        # ~!!
-        elif self.db_to_realtime_daily_buy_list_num == 1005:
-            # 20일 이동평균선과 승수 2 사용
-            realtime_daily_buy_list = []
-            # 사용하는 이동평균선 기간
-            ma_period = 40
-
-            if i > ma_period:
-                '''
-                아래 쿼리에 'ORDER BY volume * close DESC limit 100' 조건은 전종목 (2000여개)을 검색할 경우 시뮬레이션 하루당 80여초가량 소모되어 (P.S. 컴퓨터 사양마다 상이할 수 있습니다.) 
-                거래대금으로 나열한 뒤 100개의 종목들만 가져오도록 제한하였습니다.
-                차후 실제로 알고리즘을 구현하실 때에는 보조지표 중의 하나인 볼린저밴드를 이용하시기 전에 충분한 조건들을 추가하여 종목 수를 제한하는 것을 추천드립니다. 
-                (예시. 이평선, 거래량 사용)
-                '''
-
-                sql = "select * from `" + date_rows_yesterday + "` a " \
-                                                                "where NOT exists (select null from stock_konex b where a.code=b.code)" \
-                                                                "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
-                                                                "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
-                                                                "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)" \
-                                                                "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)" \
-                                                                "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)" \
-                                                                "and a.close < '%s' " \
-                                                                "and NOT code_name = '넥슨지티' " \
-                                                                "and NOT code_name = '현대바이오' " \
-                                                                "and open < close " \
-                                                                "order by (clo20 * vol20) desc limit 1500"
-
-                realtime_daily_buy_list_temp = self.engine_daily_buy_list.execute(sql % (date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
-
-                # 과매도 포지션 포착
-                for item in realtime_daily_buy_list_temp:
-                    code_name = item.code_name
-                    # 위의 조건을 충족하는 종목의 종가 데이터들을 가져오는 쿼리
-                    # bb_sql = f"""
-                    #         SELECT close
-                    #         FROM `{code_name}`
-                    #         WHERE date <= '{date_rows_yesterday}'
-                    #         ORDER BY date DESC limit {ma_period}
-                    #     """
-                    # 키움증권의 경우에는 볼린저밴드 계산 시 종가, 고가,저가의 평균값을 이용
-                    bb_sql = f"""
-                                    SELECT (close + high + low)/3
-                                    FROM `{code_name}`
-                                    WHERE date <= '{date_rows_yesterday}'
-                                    ORDER BY date DESC limit {ma_period}
-                                """
-                    df_close = self.engine_daily_craw.execute(bb_sql).fetchall()
-                    if len(df_close) >= ma_period:
-                        # 데이터프레임으로 종가리스트를 담아서 trading_algorithms.py 파일에 존재하는 BBands 함수에 보내주는 코드
-                        result = BBands(pd.DataFrame(df_close), w=ma_period)
-                        # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
-                        if result:
-                            mom, mom_1, mom_sig, mom_sig_1, mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
-                            # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치
-                            b1 = bw_m * 1
-                            BB1 = bw
-                            BB3 = perb
-                            if mom > 100 and mom > mom_sig:
-                                item2 = list(item)
-                                item2[-3] = BB1
-                                item2[-1] = BB3
-                                realtime_daily_buy_list.append(item2)
-
-        # END ################################################################################################################
-
-        # START !@@##############################################################################################################
-        # 볼린저밴드 알고리즘을 위해 추가된 부분 3 (매수 리스트 알고리즘)
-        # 마지막 **db_to_realtime_daily_buy_list_num** if 조건문 제일 아래에 추가해주시기 바랍니다.
-        # ~!!
-        elif self.db_to_realtime_daily_buy_list_num == 1006:
-            # 20일 이동평균선과 승수 2 사용
-            realtime_daily_buy_list = []
-            # 사용하는 이동평균선 기간
-            ma_period = 40
-
-            if i > ma_period:
-                '''
-                아래 쿼리에 'ORDER BY volume * close DESC limit 100' 조건은 전종목 (2000여개)을 검색할 경우 시뮬레이션 하루당 80여초가량 소모되어 (P.S. 컴퓨터 사양마다 상이할 수 있습니다.) 
-                거래대금으로 나열한 뒤 100개의 종목들만 가져오도록 제한하였습니다.
-                차후 실제로 알고리즘을 구현하실 때에는 보조지표 중의 하나인 볼린저밴드를 이용하시기 전에 충분한 조건들을 추가하여 종목 수를 제한하는 것을 추천드립니다. 
-                (예시. 이평선, 거래량 사용)
-                '''
-
-                sql = "select * from `" + date_rows_yesterday + "` a " \
-                                                                "where NOT exists (select null from stock_konex b where a.code=b.code)" \
-                                                                "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
-                                                                "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
-                                                                "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)" \
-                                                                "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)" \
-                                                                "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)" \
-                                                                "and a.close < '%s' " \
-                                                                "and NOT code_name = '넥슨지티' " \
-                                                                "and NOT code_name = '현대바이오' " \
-                                                                "and open < close " \
-                                                                "order by (clo20 * vol20) desc limit 1500"
-
-                realtime_daily_buy_list_temp = self.engine_daily_buy_list.execute(sql % (date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
-
-                # 과매도 포지션 포착
-                for item in realtime_daily_buy_list_temp:
-                    code_name = item.code_name
-                    # 위의 조건을 충족하는 종목의 종가 데이터들을 가져오는 쿼리
-                    # bb_sql = f"""
-                    #         SELECT close
-                    #         FROM `{code_name}`
-                    #         WHERE date <= '{date_rows_yesterday}'
-                    #         ORDER BY date DESC limit {ma_period}
-                    #     """
-                    # 키움증권의 경우에는 볼린저밴드 계산 시 종가, 고가,저가의 평균값을 이용
-                    bb_sql = f"""
-                                    SELECT (close + high + low)/3
-                                    FROM `{code_name}`
-                                    WHERE date <= '{date_rows_yesterday}'
-                                    ORDER BY date DESC limit {ma_period}
-                                """
-                    df_close = self.engine_daily_craw.execute(bb_sql).fetchall()
-                    if len(df_close) >= ma_period:
-                        # 데이터프레임으로 종가리스트를 담아서 trading_algorithms.py 파일에 존재하는 BBands 함수에 보내주는 코드
-                        result = BBands(pd.DataFrame(df_close), w=ma_period)
-                        # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
-                        if result:
-                            mom, mom_1, mom_sig, mom_sig_1, mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
-                            # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치
-                            b1 = bw_m * 1
-                            BB1 = bw
-                            BB3 = perb
-                            if perb > 0.8 and bw > b1:
-                                item2 = list(item)
-                                item2[-3] = BB1
-                                item2[-1] = BB3
-                                realtime_daily_buy_list.append(item2)
-
-        # END ################################################################################################################
-
-
-        # START !@@##############################################################################################################
-        # 볼린저밴드 알고리즘을 위해 추가된 부분 3 (매수 리스트 알고리즘)
-        # 마지막 **db_to_realtime_daily_buy_list_num** if 조건문 제일 아래에 추가해주시기 바랍니다.
-        # ~!!
-        elif self.db_to_realtime_daily_buy_list_num == 1007:
-            # 20일 이동평균선과 승수 2 사용
-            realtime_daily_buy_list = []
-            # 사용하는 이동평균선 기간
-            ma_period = 40
-
-            if i > ma_period:
-                '''
-                아래 쿼리에 'ORDER BY volume * close DESC limit 100' 조건은 전종목 (2000여개)을 검색할 경우 시뮬레이션 하루당 80여초가량 소모되어 (P.S. 컴퓨터 사양마다 상이할 수 있습니다.) 
-                거래대금으로 나열한 뒤 100개의 종목들만 가져오도록 제한하였습니다.
-                차후 실제로 알고리즘을 구현하실 때에는 보조지표 중의 하나인 볼린저밴드를 이용하시기 전에 충분한 조건들을 추가하여 종목 수를 제한하는 것을 추천드립니다. 
-                (예시. 이평선, 거래량 사용)
-                '''
-
-                sql = "select * from `" + date_rows_yesterday + "` a " \
-                                                                "where NOT exists (select null from stock_konex b where a.code=b.code)" \
-                                                                "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
-                                                                "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
-                                                                "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)" \
-                                                                "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)" \
-                                                                "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)" \
-                                                                "and a.close < '%s' " \
-                                                                "and NOT code_name = '넥슨지티' " \
-                                                                "and NOT code_name = '현대바이오' " \
-                                                                "and open < close " \
-                                                                "order by (clo20 * vol20) desc limit 1500"
-
-                realtime_daily_buy_list_temp = self.engine_daily_buy_list.execute(sql % (date_rows_yesterday, self.interval_month, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, date_rows_yesterday, self.invest_unit)).fetchall()
-
-                # 과매도 포지션 포착
-                for item in realtime_daily_buy_list_temp:
-                    code_name = item.code_name
-                    # 위의 조건을 충족하는 종목의 종가 데이터들을 가져오는 쿼리
-                    # bb_sql = f"""
-                    #         SELECT close
-                    #         FROM `{code_name}`
-                    #         WHERE date <= '{date_rows_yesterday}'
-                    #         ORDER BY date DESC limit {ma_period}
-                    #     """
-                    # 키움증권의 경우에는 볼린저밴드 계산 시 종가, 고가,저가의 평균값을 이용
-                    bb_sql = f"""
-                                    SELECT (close + high + low)/3
-                                    FROM `{code_name}`
-                                    WHERE date <= '{date_rows_yesterday}'
-                                    ORDER BY date DESC limit {ma_period}
-                                """
-                    df_close = self.engine_daily_craw.execute(bb_sql).fetchall()
-                    if len(df_close) >= ma_period:
-                        # 데이터프레임으로 종가리스트를 담아서 trading_algorithms.py 파일에 존재하는 BBands 함수에 보내주는 코드
-                        result = BBands(pd.DataFrame(df_close), w=ma_period)
-                        # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
-                        if result:
-                            mom, mom_1, mom_sig, mom_sig_1, mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
-                            # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치
-                            b1 = bw_m * 1.1
-                            BB1 = bw
-                            BB3 = perb
-                            if perb > 0.8 and bw > 0.2:
-                                item2 = list(item)
-                                item2[-3] = BB1
-                                item2[-1] = BB3
-                                realtime_daily_buy_list.append(item2)
-
+                            b1 = bw_m * 1.15
+                            if perb_1 < 1.2 and perb > 1 and bw > b1:
+                                realtime_daily_buy_list.append(item)
         # END ################################################################################################################
 
         ######################################################################################################################################################################################
@@ -2851,7 +1397,7 @@ class simulator_func_mysql:
                                                             'yes_clo100', 'yes_clo120',
                                                             'vol5', 'vol10', 'vol20', 'vol40', 'vol60', 'vol80',
                                                             'vol100', 'vol120', 'current_time', 'AI_Pre',
-                                                            'AI_loss', 'BB1', 'BB2', 'BB3', 'd1_diff_target'])
+                                                            'AI_loss', 'BB1', 'BB2', 'BB3'])
 
             # lamda는 익명 함수이다. 여기서 int로 param을 보내야 6d ( 정수) 에서 안걸린다.
             df_realtime_daily_buy_list['code'] = df_realtime_daily_buy_list['code'].apply(
@@ -2995,7 +1541,7 @@ class simulator_func_mysql:
                                               'reinvest_unit',
                                               'sell_date', 'sell_price', 'sell_rate', 'rate_std', 'rate_std_mod_val',
                                               'rate_std_htr', 'rate_htr',
-                                              'rate_std_mod_val_htr', 'yes_close', 'close', 'd1_diff_rate',
+                                              'rate_std_mod_val_htr', 'yes_close', 'close', 'd1_diff_rate', 'd1_diff',
                                               'open', 'high',
                                               'low',
                                               'volume', 'clo5', 'clo10', 'clo20', 'clo40', 'clo60', 'clo80',
@@ -3262,15 +1808,6 @@ class simulator_func_mysql:
     def db_to_all_item_present_price_update_by_min(self, code_name, now_close_price):
         sql = "update all_item_db set present_price = '%s' where code_name = '%s' and sell_date = 0"
         self.engine_simulator.execute(sql % (now_close_price, code_name))
-        sql_bb = "ALTER TABLE all_item_db MODIFY BB2 FLOAT(2)"
-        self.engine_simulator.execute(sql_bb)
-        sql_bb2 = "update all_item_db set BB2 = rate where BB2 <= rate"
-        self.engine_simulator.execute(sql_bb2)
-        sql_bb = "ALTER TABLE all_item_db MODIFY BB3 FLOAT(2)"
-        self.engine_simulator.execute(sql_bb)
-        sql_bb3 = "update all_item_db set BB3 = rate where BB3 >= rate"
-        self.engine_simulator.execute(sql_bb3)
-
 
     # 분 마다 보유한 종목의 시세를 업데이트 하는 함수
     def update_all_db_by_min(self, min_date):
@@ -3436,38 +1973,8 @@ class simulator_func_mysql:
             # select 할 컬럼은 항상 코드명, 수익률, 매도할 종목의 현재가, 수익(손실)금액
             # sql 첫 번째 라인은 항상 고정
             sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
-                  "and ((BB2 >= '%s' and rate < (BB2 - '%s')) or (rate < '%s') or (`current_time` > '%s')) group by code"
-            sell_list = self.engine_simulator.execute(sql % (0, self.sell_point, self.sell_point2, self.losscut_point, self.cut_time)).fetchall()
-
-        elif self.sell_list_num == 25:
-            # select 할 컬럼은 항상 코드명, 수익률, 매도할 종목의 현재가, 수익(손실)금액
-            # sql 첫 번째 라인은 항상 고정
-            sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
-                  "and ((BB2 >= '%s' and rate < (BB2 - '%s')) or (rate < '%s')) group by code"
-            sell_list = self.engine_simulator.execute(sql % (0, self.sell_point, self.sell_point2, self.losscut_point)).fetchall()
-
-
-        elif self.sell_list_num == 26:
-            # select 할 컬럼은 항상 코드명, 수익률, 매도할 종목의 현재가, 수익(손실)금액
-            # sql 첫 번째 라인은 항상 고정
-            sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
-                  "and (rate < '%s') or (`current_time` < '%s') group by code"
-            sell_list = self.engine_simulator.execute(sql % (0, self.losscut_point, self.cut_time)).fetchall()
-
-        elif self.sell_list_num == 27:
-            # select 할 컬럼은 항상 코드명, 수익률, 매도할 종목의 현재가, 수익(손실)금액
-            # sql 첫 번째 라인은 항상 고정
-            sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
-                  "and (rate < '%s') or (`current_time` > '%s') group by code"
-            sell_list = self.engine_simulator.execute(sql % (0, self.losscut_point, self.cut_time)).fetchall()
-
-        elif self.sell_list_num == 28:
-            # select 할 컬럼은 항상 코드명, 수익률, 매도할 종목의 현재가, 수익(손실)금액
-            # sql 첫 번째 라인은 항상 고정
-            sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
-                  "and ((BB2 >= '%s' and rate < (BB2 - '%s')) or (rate < '%s')) " \
-                  "or (`current_time` > '%s') group by code"
-            sell_list = self.engine_simulator.execute(sql % (0, self.sell_point, self.sell_point2, self.losscut_point, self.cut_time)).fetchall()
+                  "and (rate >= '%s' or `current_time` > '%s') group by code"
+            sell_list = self.engine_simulator.execute(sql % (0, self.sell_point, self.cut_time)).fetchall()
 
 
         # START !@@##############################################################################################################
@@ -3514,7 +2021,7 @@ class simulator_func_mysql:
                         result = BBands(pd.DataFrame(df_close), w=ma_period)
                         # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
                         if result:
-                            mom, mom_1, mom_sig, mom_sig_1, mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
+                            mbb, ubb, lbb, perb, perb_1, bw, bw_m = result
                             # perb가 1보다 큰 경우: 종가가 볼린저밴드 상한선 위에 위치
                             if perb < 1 and perb > 0.98 and perb_1 > 1:
                                 sell_list.append(item)
@@ -3533,7 +2040,7 @@ class simulator_func_mysql:
         # print("current_time_update")
         sql = "UPDATE all_item_db t set t.`current_time` = '%s' WHERE sell_date = '%s'"
         self.engine_simulator.execute(sql % (min[8:], 0))
-
+        
     # 실제로 매도를 하는 함수 (매도 한 결과를 all_item_db에 반영)
     def sell_send_order(self, min_date, sell_price, sell_rate, code):
         # print("sell send order")

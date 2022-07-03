@@ -9,7 +9,6 @@ from sqlalchemy.event import listen
 from sqlalchemy.pool import Pool
 from sqlalchemy.exc import InternalError, ProgrammingError
 from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.callbacks import ModelCheckpoint
 
 from ai.SPPModel import load_data, create_model, evaluate, predict, DataNotEnough
 from library import cf
@@ -40,15 +39,14 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     model = create_model(n_steps=ai_settings['n_steps'], loss=ai_settings['loss'], units=ai_settings['units'],
                          n_layers=ai_settings['n_layers'], dropout=ai_settings['dropout'])
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=50)  # 50번이상 더 좋은 결과가 없으면 학습을 멈춤
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10)  # 50번이상 더 좋은 결과가 없으면 학습을 멈춤
 
-    h = model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
+    model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
                         batch_size=ai_settings['batch_size'],
                         epochs=ai_settings['epochs'],
                         validation_data=(shuffled_data["X_test"], shuffled_data["y_test"]),
                         callbacks=[early_stopping],
                         verbose=1)
-
 
     scaled_data = load_data(df=dataset.copy(), n_steps=ai_settings['n_steps'], test_size=ai_settings['test_size'],
                             shuffle=False)
@@ -76,11 +74,6 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     # # realtime_daily_buy_list 테이블에 AI 예측값 추가
     # engine.execute(f"""UPDATE realtime_daily_buy_list SET `AI_Pre` = ratio WHERE code_name = code_name""")
 
-    # loss_val 저장
-    loss_list = h.history['loss']
-    loss_val = loss_list[-1]
-    # loss_val = abs(y_pred[-1] - dataset.iloc[-1]['close']) / dataset.iloc[-1]['close'] * 100
-
     if ratio > 0: # lookup_step(분, 일) 후 상승 예상일 경우 출력 메시지
         msg += f'    {ratio:.2f}% ⯅ '
     elif ratio < 0: # lookup_step(분, 일) 후 하락 예상일 경우 출력 메시지
@@ -88,7 +81,7 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     print(msg, end=' ')
 
     # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상
-    return ai_settings['ratio_cut'] >= ratio, ratio, loss_val
+    return ai_settings['ratio_cut'] >= ratio, ratio
 
 
 def create_training_engine(db_name):
@@ -105,10 +98,10 @@ def create_training_engine(db_name):
 
 def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
 
-    # engine.execute("""UPDATE realtime_daily_buy_list SET level_0 = 0""")
-    # engine.execute("""SELECT @level_0:=0 from realtime_daily_buy_list""")
-    # engine.execute("""UPDATE realtime_daily_buy_list SET level_0=@level_0:=@level_0+1 ORDER BY BB1""")
-    engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 100""")
+    engine.execute("""UPDATE realtime_daily_buy_list SET level_0 = 0""")
+    engine.execute("""SELECT @level_0:=0 from realtime_daily_buy_list""")
+    engine.execute("""UPDATE realtime_daily_buy_list SET level_0=@level_0:=@level_0+1 ORDER BY level_0""")
+    engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 30""")
 
     if ai_filter_num == 1:
         ai_settings = {
@@ -165,28 +158,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
             "optimizer": "adam",  # optimizer : 최적화 알고리즘 선택
             "batch_size": 1024,  # 각 학습 반복에 사용할 데이터 샘플 수
             "epochs": 200,  # 몇 번 테스트 할지
-            "ratio_cut": 1,  # 단위:(%) lookup_step 기간 뒤 ratio_cut(%) 만큼 증가 할 것이 예측 된다면 매수
-            "table": "daily_craw",
-            # 분석 시 daily_craw(일별데이터)를 이용 할지 min_craw(분별데이터)를 이용 할지 선택. ** 주의: min_craw 선택 시 최근 1년 데이터만 있기 때문에 simulator_func_mysql.py에서 self.simul_start_date를 최근 1년 전으로 설정 필요
-            "is_used_predicted_close": True
-            # ratio(예상 상승률) 계산 시 예측 그래프의 close 값을 이용 할 경우 True, 실제 close 값을 이용할 시 False
-        }
-        tr_engine = create_training_engine(ai_settings['table'])
-
-    elif ai_filter_num == 4:
-        ai_settings = {
-            "n_steps": 100,  # 시퀀스 데이터를 몇개씩 담을지 설정
-            "lookup_step": 2,  # 단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
-            "test_size": 0.2,
-            # train 범위 : test_size 가 0.2 이면 X_train, y_train에 80% 데이터로 트레이닝 하고 X_test,y_test에 나머지 20%로 테스트를 하겠다는 의미
-            "n_layers": 5,  # LSTM layer 개수
-            "units": 50,  # LSTM neurons 개수
-            "dropout": 0.2,  # overfitting 방지를 위해 몇개의 노드를 죽이고 남은 노드들을 통해서만 훈련을 하는 것(0.2 -> 20%를 죽인다)
-            "loss": "mae",  # loss : 최적화 과정에서 최소화될 손실 함수(loss function)를 설정 # mae : mean absolute error (평균 절대 오차)
-            "optimizer": "adam",  # optimizer : 최적화 알고리즘 선택
-            "batch_size": 1024,  # 각 학습 반복에 사용할 데이터 샘플 수
-            "epochs": 200,  # 몇 번 테스트 할지
-            "ratio_cut": 3,  # 단위:(%) lookup_step 기간 뒤 ratio_cut(%) 만큼 증가 할 것이 예측 된다면 매수
+            "ratio_cut": 0.5,  # 단위:(%) lookup_step 기간 뒤 ratio_cut(%) 만큼 증가 할 것이 예측 된다면 매수
             "table": "daily_craw",
             # 분석 시 daily_craw(일별데이터)를 이용 할지 min_craw(분별데이터)를 이용 할지 선택. ** 주의: min_craw 선택 시 최근 1년 데이터만 있기 때문에 simulator_func_mysql.py에서 self.simul_start_date를 최근 1년 전으로 설정 필요
             "is_used_predicted_close": True
@@ -205,7 +177,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 print(f"{err} \n jackbot 데이터베이스가 존재 하지 않습니다. \n 콜렉터를 실행해주세요 ")
             exit(1)
 
-        feature_columns = ["close", "volume", "open", "high", "low", "d1_diff_rate", "BB1", "BB3"]
+        feature_columns = ["close", "volume", "open", "high", "low"]
         filtered_list = []
         ratio_list = []
         for code_name, in buy_list:
@@ -227,18 +199,15 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
                 continue
             try:
-                filtered, ratio, loss_val = filtered_by_basic_lstm(df, ai_settings)
+                filtered, ratio = filtered_by_basic_lstm(df, ai_settings)
 
                 r = float(round(ratio,2))
-                l = float(round(float(loss_val),5))
                 # realtime_daily_buy_list 테이블에 AI 예측값 추가
                 # WHERE code_name = 'code_name'ALTER TABLE realtime_daily_buy_list MODIFY AI_Pre FLOAT(3);
-                engine.execute("""ALTER TABLE realtime_daily_buy_list MODIFY AI_Pre FLOAT(5)""")
-                engine.execute("""ALTER TABLE realtime_daily_buy_list MODIFY AI_loss FLOAT(5)""")
+                engine.execute("""ALTER TABLE realtime_daily_buy_list MODIFY AI_Pre FLOAT(3)""")
                 engine.execute("""UPDATE realtime_daily_buy_list SET AI_Pre = {} WHERE code_name = '{}'""".format(r, code_name))
-                engine.execute("""UPDATE realtime_daily_buy_list SET AI_loss = {} WHERE code_name = '{}'""".format(l, code_name))
                 # AI 예측값 순으로 realtime_daily_buy_list 테이블 정렬
-                # engine.execute("""alter table realtime_daily_buy_list order by AI_Pre;""")
+                engine.execute("""alter table realtime_daily_buy_list order by AI_Pre desc;""")
 
             except (DataNotEnough, ValueError):
                 print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
@@ -246,12 +215,12 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 continue
 
             print(code_name)
-            engine.execute("""alter table realtime_daily_buy_list order by AI_loss;""")
 
             # filtered가 True 이면 filtered_list(필터링 종목)에 해당 종목을 append
             if filtered:
                 print(f"기준에 부합하지 않으므로 realtime_daily_buy_list 에서 제외")
                 filtered_list.append(code_name)
+
 
     # filtered_list에 있는 종목들을 realtime_daily_buy_list(매수리스트)에서 제거
     # 모든 조건문에서 filtered_list를 생성해줘야 함

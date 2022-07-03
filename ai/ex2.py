@@ -35,9 +35,9 @@ conn = pymysql.connect(host=cf.db_ip,
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
-FEATURE_COLUMNS = ["date","close", "volume", "open", "high", "low"]
+FEATURE_COLUMNS = ["date", "d1_diff_rate", "volume", "open", "high", "low", "close"]
 ##!@####
-code_name = '삼성전자'
+code_name = 'SG글로벌'
 until = '20220419'
 sql = """
     SELECT {} FROM `{}`
@@ -55,10 +55,10 @@ print(df)
 plt.plot(df['volume'])
 plt.show()
 
-plt.plot(df['close'])
+plt.plot(df['d1_diff_rate'])
 plt.show()
 
-df_temp = df[['volume', 'close']].values
+df_temp = df[['volume', 'd1_diff_rate']].values
 
 # 정규화 (0과 1사이 값으로 변환)
 # 0,1 범위?
@@ -117,7 +117,7 @@ model = Sequential()
 # time_steps : 한 묶음에 몇 개의 데이터가 있는지
 # features : 속성(컬럼)의 수 (차원)
 # data_size 는 생략해도 input_shape에서 자동으로 계산해줌
-model.add(LSTM(units=32 ,input_shape=X_train.shape[1:]))
+model.add(LSTM(units=64 ,input_shape=X_train.shape[1:]))
 # Dense : 출력층 값이 1개가 나온다. 우리가 예측한 주가, 이것을 통해서 오차를 구하고 학습을 해서 모델을 만드는 것
 model.add(Dense(units=1))
 

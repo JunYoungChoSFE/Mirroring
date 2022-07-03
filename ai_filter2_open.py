@@ -107,8 +107,8 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
 
     # engine.execute("""UPDATE realtime_daily_buy_list SET level_0 = 0""")
     # engine.execute("""SELECT @level_0:=0 from realtime_daily_buy_list""")
-    # engine.execute("""UPDATE realtime_daily_buy_list SET level_0=@level_0:=@level_0+1 ORDER BY BB1""")
-    engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 100""")
+    # engine.execute("""UPDATE realtime_daily_buy_list SET level_0=@level_0:=@level_0+1 ORDER BY level_0""")
+    engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 50""")
 
     if ai_filter_num == 1:
         ai_settings = {
@@ -176,7 +176,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
     elif ai_filter_num == 4:
         ai_settings = {
             "n_steps": 100,  # 시퀀스 데이터를 몇개씩 담을지 설정
-            "lookup_step": 2,  # 단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+            "lookup_step": 1,  # 단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
             "test_size": 0.2,
             # train 범위 : test_size 가 0.2 이면 X_train, y_train에 80% 데이터로 트레이닝 하고 X_test,y_test에 나머지 20%로 테스트를 하겠다는 의미
             "n_layers": 5,  # LSTM layer 개수

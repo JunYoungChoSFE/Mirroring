@@ -11,7 +11,7 @@ from sqlalchemy.exc import InternalError, ProgrammingError
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ModelCheckpoint
 
-from ai.SPPModel import load_data, create_model, evaluate, predict, DataNotEnough
+from ai.SPPModel_target import load_data, create_model, evaluate, predict, DataNotEnough
 from library import cf
 from library.open_api import setup_sql_mod
 
@@ -62,15 +62,15 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     # 스케일링 된 예측 결과
     scaled_y_pred = model.predict(scaled_data['X_test'])
     # 실제 값으로 변환 된 결과
-    y_pred = np.squeeze(scaled_data['column_scaler']['close'].inverse_transform(scaled_y_pred))
+    y_pred = np.squeeze(scaled_data['column_scaler']['d1_diff_target'].inverse_transform(scaled_y_pred))
 
     if ai_settings['is_used_predicted_close']:
         close = y_pred[-1] # 예측 그래프에서의 종가
     else:
-        close = dataset.iloc[-1]['close'] # 실제 종가
+        close = dataset.iloc[-1]['d1_diff_target'] # 실제 종가
 
     # ratio : 예상 상승률
-    ratio = (future_price - close) / close * 100
+    ratio = future_price
 
     msg = f"After {ai_settings['lookup_step']}: {int(close)} -> {int(future_price)}"
     # # realtime_daily_buy_list 테이블에 AI 예측값 추가
@@ -107,7 +107,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
 
     # engine.execute("""UPDATE realtime_daily_buy_list SET level_0 = 0""")
     # engine.execute("""SELECT @level_0:=0 from realtime_daily_buy_list""")
-    # engine.execute("""UPDATE realtime_daily_buy_list SET level_0=@level_0:=@level_0+1 ORDER BY BB1""")
+    # engine.execute("""UPDATE realtime_daily_buy_list SET level_0=@level_0:=@level_0+1 ORDER BY level_0""")
     engine.execute(f"""DELETE FROM realtime_daily_buy_list WHERE level_0 > 100""")
 
     if ai_filter_num == 1:
@@ -176,7 +176,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
     elif ai_filter_num == 4:
         ai_settings = {
             "n_steps": 100,  # 시퀀스 데이터를 몇개씩 담을지 설정
-            "lookup_step": 2,  # 단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+            "lookup_step": 1,  # 단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
             "test_size": 0.2,
             # train 범위 : test_size 가 0.2 이면 X_train, y_train에 80% 데이터로 트레이닝 하고 X_test,y_test에 나머지 20%로 테스트를 하겠다는 의미
             "n_layers": 5,  # LSTM layer 개수
@@ -186,7 +186,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
             "optimizer": "adam",  # optimizer : 최적화 알고리즘 선택
             "batch_size": 1024,  # 각 학습 반복에 사용할 데이터 샘플 수
             "epochs": 200,  # 몇 번 테스트 할지
-            "ratio_cut": 3,  # 단위:(%) lookup_step 기간 뒤 ratio_cut(%) 만큼 증가 할 것이 예측 된다면 매수
+            "ratio_cut": 0.3,  # 단위:(%) lookup_step 기간 뒤 ratio_cut(%) 만큼 증가 할 것이 예측 된다면 매수
             "table": "daily_craw",
             # 분석 시 daily_craw(일별데이터)를 이용 할지 min_craw(분별데이터)를 이용 할지 선택. ** 주의: min_craw 선택 시 최근 1년 데이터만 있기 때문에 simulator_func_mysql.py에서 self.simul_start_date를 최근 1년 전으로 설정 필요
             "is_used_predicted_close": True
@@ -205,7 +205,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 print(f"{err} \n jackbot 데이터베이스가 존재 하지 않습니다. \n 콜렉터를 실행해주세요 ")
             exit(1)
 
-        feature_columns = ["close", "volume", "open", "high", "low", "d1_diff_rate", "BB1", "BB3"]
+        feature_columns = ["d1_diff_target", "volume", "d1_diff_rate", "BB1", "BB3"]
         filtered_list = []
         ratio_list = []
         for code_name, in buy_list:

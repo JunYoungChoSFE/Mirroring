@@ -37,7 +37,9 @@ class Trader(QMainWindow):
         # 장마감 시간 설정
         self.market_end_time = QTime(15, 30, 0)
         # 매수를 몇 시 까지 할지 설정. (시, 분, 초)
-        self.buy_end_time = QTime(10, 6, 0)
+        self.buy_end_time = QTime(12, 30, 0)
+
+        self.buy_start_time = QTime(9, 5, 0)
 
         ############################################
 
@@ -141,7 +143,7 @@ class Trader(QMainWindow):
     def buy_time_check(self):
         logger.debug("buy_time_check 함수에 들어왔습니다!")
         self.current_time = QTime.currentTime()
-        if self.current_time < self.buy_end_time:
+        if self.current_time < self.buy_end_time and self.current_time > self.buy_start_time:
             return True
         else:
             logger.debug("설정한 매수 시간이 끝났습니다!")
